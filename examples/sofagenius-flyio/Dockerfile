@@ -68,6 +68,21 @@ RUN python3 /app/examples/sofagenius-flyio/mount_bridge.py
 
 RUN chown -R node:node /opt/sofagenius
 
+# -- Skills (loaded via openclaw.json skills.load.extraDirs) --
+COPY examples/sofagenius-flyio/skills /opt/sofagenius-skills
+RUN chown -R node:node /opt/sofagenius-skills
+
+# -- Exec approvals (auto-approve python3 skill scripts without manual gates) --
+RUN mkdir -p /home/node/.openclaw
+COPY examples/sofagenius-flyio/exec-approvals.json /home/node/.openclaw/exec-approvals.json
+RUN chown -R node:node /home/node/.openclaw
+
+# -- Heartbeat checklist (proactive agent behavior) --
+COPY examples/sofagenius-flyio/HEARTBEAT.md /app/HEARTBEAT.md
+
+# -- OpenClaw config (gateway settings, allowed origins, skills) --
+COPY examples/sofagenius-flyio/openclaw.json /app/openclaw.json
+
 # -- Supervisor config (runs both services) --
 COPY examples/sofagenius-flyio/supervisord.conf /etc/supervisor/conf.d/openclaw-sofagenius.conf
 
@@ -76,5 +91,5 @@ ENV NODE_ENV=production
 # Expose OpenClaw gateway (3000) and SofaGenius API (8000)
 EXPOSE 3000 8000
 
-# Supervisor manages both processes
-CMD ["supervisord", "-n", "-c", "/etc/supervisor/conf.d/openclaw-sofagenius.conf"]
+# Ensure /data and /tmp are writable by node user at runtime (volume mount resets ownership)
+CMD ["sh", "-c", "chown -R node:node /data && chmod 1777 /tmp && exec supervisord -n -c /etc/supervisor/conf.d/openclaw-sofagenius.conf"]

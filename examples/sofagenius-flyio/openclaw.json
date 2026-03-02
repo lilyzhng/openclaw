@@ -8,7 +8,16 @@
       "sandbox": {
         "mode": "off"
       },
-      "maxConcurrent": 4
+      "maxConcurrent": 4,
+      "heartbeat": {
+        "every": "30m",
+        "target": "last",
+        "activeHours": {
+          "start": "08:00",
+          "end": "23:00",
+          "timezone": "America/Los_Angeles"
+        }
+      }
     },
     "list": [
       {
@@ -27,7 +36,41 @@
   },
   "gateway": {
     "mode": "local",
-    "bind": "lan"
+    "port": 3000,
+    "bind": "lan",
+    "controlUi": {
+      "allowedOrigins": ["https://openclaw-sofagenius.fly.dev"]
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "accounts": {
+        "default": {
+          "enabled": true
+        }
+      }
+    },
+    "discord": {
+      "dmPolicy": "open",
+      "groupPolicy": "open",
+      "allowFrom": ["*"],
+      "guilds": {
+        "*": { "requireMention": false }
+      },
+      "accounts": {
+        "default": {
+          "enabled": true,
+          "groupPolicy": "open",
+          "dmPolicy": "open"
+        }
+      }
+    }
+  },
+  "tools": {
+    "exec": {
+      "security": "full",
+      "ask": "off"
+    }
   },
   "skills": {
     "load": {
