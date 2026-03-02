@@ -27,12 +27,12 @@ const CRON_JOB_NAME = "morning-checkin";
 const morningCheckinPlugin = {
   id: "morning-checkin",
   name: "Morning Check-in",
-  description: "Scheduled morning voice call check-in with Obsidian vault transcript logging.",
+  description: "Scheduled morning voice call check-in.",
   register(api: OpenClawPluginApi) {
     const config = parseConfig(api.pluginConfig);
 
     // -----------------------------------------------------------------------
-    // Gateway RPC: morning-checkin.setup — creates/updates the cron job
+    // Gateway RPC: morning-checkin.setup -- creates/updates the cron job
     // -----------------------------------------------------------------------
     api.registerGatewayMethod(
       "morning-checkin.setup",
@@ -79,7 +79,7 @@ const morningCheckinPlugin = {
     );
 
     // -----------------------------------------------------------------------
-    // Gateway RPC: morning-checkin.run — trigger a check-in call now
+    // Gateway RPC: morning-checkin.run -- trigger a check-in call now
     // -----------------------------------------------------------------------
     api.registerGatewayMethod(
       "morning-checkin.run",
@@ -97,7 +97,7 @@ const morningCheckinPlugin = {
             prompt,
             instructions:
               "Run this prompt as an isolated agent turn now. " +
-              "The agent should use the voice_call and cron tools.",
+              "The agent should use the voice_call tool.",
           });
         } catch (err) {
           respond(false, {
@@ -108,7 +108,7 @@ const morningCheckinPlugin = {
     );
 
     // -----------------------------------------------------------------------
-    // Gateway RPC: morning-checkin.config — show current config
+    // Gateway RPC: morning-checkin.config -- show current config
     // -----------------------------------------------------------------------
     api.registerGatewayMethod(
       "morning-checkin.config",
@@ -118,12 +118,8 @@ const morningCheckinPlugin = {
           time: config.time,
           tz: config.tz,
           toNumber: config.toNumber ? `${config.toNumber.slice(0, 6)}...` : "(default)",
-          vaultPath: config.vaultPath ?? "(not configured)",
-          vaultSubdir: config.vaultSubdir,
-          gitSync: config.gitSync,
           maxCallDurationMin: config.maxCallDurationMin,
           cronExpr: timeToCron(config.time),
-          hasBriefingPrompt: Boolean(config.briefingPrompt),
         });
       },
     );
@@ -135,7 +131,7 @@ const morningCheckinPlugin = {
       ({ program }) => {
         const cmd = program
           .command("morning-checkin")
-          .description("Morning voice check-in with Obsidian vault sync");
+          .description("Morning voice check-in call");
 
         cmd
           .command("setup")
@@ -154,8 +150,6 @@ const morningCheckinPlugin = {
             console.log(`  Time:     ${config.time} (${config.tz})`);
             console.log(`  Cron:     ${cronExpr}`);
             console.log(`  Phone:    ${config.toNumber ?? "(uses voice-call default)"}`);
-            console.log(`  Vault:    ${config.vaultPath ?? "(not configured)"}`);
-            console.log(`  Git sync: ${config.gitSync}`);
             console.log("");
             console.log("To activate, run:");
             console.log(`  openclaw cron add --name "${CRON_JOB_NAME}" \\`);
@@ -197,15 +191,11 @@ const morningCheckinPlugin = {
           .description("Show current morning check-in configuration")
           .action(() => {
             console.log("Morning Check-in Config:");
-            console.log(`  enabled:           ${config.enabled}`);
-            console.log(`  time:              ${config.time}`);
-            console.log(`  tz:                ${config.tz}`);
-            console.log(`  toNumber:          ${config.toNumber ?? "(not set, uses voice-call default)"}`);
-            console.log(`  vaultPath:         ${config.vaultPath ?? "(not configured)"}`);
-            console.log(`  vaultSubdir:       ${config.vaultSubdir}`);
-            console.log(`  gitSync:           ${config.gitSync}`);
+            console.log(`  enabled:            ${config.enabled}`);
+            console.log(`  time:               ${config.time}`);
+            console.log(`  tz:                 ${config.tz}`);
+            console.log(`  toNumber:           ${config.toNumber ?? "(not set, uses voice-call default)"}`);
             console.log(`  maxCallDurationMin: ${config.maxCallDurationMin}`);
-            console.log(`  briefingPrompt:    ${config.briefingPrompt ? "(custom)" : "(default)"}`);
           });
       },
       { commands: ["morning-checkin"] },

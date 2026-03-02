@@ -2,7 +2,7 @@
   "name": "@openclaw/morning-checkin",
   "version": "2026.3.1",
   "private": true,
-  "description": "Morning voice check-in with Obsidian vault transcript sync",
+  "description": "Scheduled morning voice call check-in",
   "type": "module",
   "peerDependencies": {
     "openclaw": ">=2026.3.1"
