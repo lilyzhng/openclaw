@@ -1,0 +1,80 @@
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-5",
+        "fallbacks": ["anthropic/claude-haiku-4-5"]
+      },
+      "sandbox": {
+        "mode": "off"
+      },
+      "maxConcurrent": 4,
+      "heartbeat": {
+        "every": "30m",
+        "target": "last",
+        "activeHours": {
+          "start": "08:00",
+          "end": "23:00",
+          "timezone": "America/Los_Angeles"
+        }
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true
+      }
+    ]
+  },
+  "auth": {
+    "profiles": {
+      "anthropic:default": {
+        "mode": "token",
+        "provider": "anthropic"
+      }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "port": 3000,
+    "bind": "lan",
+    "controlUi": {
+      "allowedOrigins": ["https://openclaw-sofagenius.fly.dev"]
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "accounts": {
+        "default": {
+          "enabled": true
+        }
+      }
+    },
+    "discord": {
+      "dmPolicy": "open",
+      "groupPolicy": "open",
+      "allowFrom": ["*"],
+      "guilds": {
+        "*": { "requireMention": false }
+      },
+      "accounts": {
+        "default": {
+          "enabled": true,
+          "groupPolicy": "open",
+          "dmPolicy": "open"
+        }
+      }
+    }
+  },
+  "tools": {
+    "exec": {
+      "security": "full",
+      "ask": "off"
+    }
+  },
+  "skills": {
+    "load": {
+      "extraDirs": ["/opt/sofagenius-skills"]
+    }
+  }
+}
