@@ -1,0 +1,72 @@
+{
+  "id": "morning-checkin",
+  "name": "Morning Check-in",
+  "description": "Scheduled morning voice call check-in with Obsidian vault transcript logging.",
+  "uiHints": {
+    "time": {
+      "label": "Check-in Time",
+      "help": "24h format, e.g. '08:00'. Default: 08:00."
+    },
+    "tz": {
+      "label": "Timezone",
+      "help": "IANA timezone, e.g. 'America/New_York'. Default: UTC."
+    },
+    "toNumber": {
+      "label": "Phone Number",
+      "placeholder": "+15550001234"
+    },
+    "vaultPath": {
+      "label": "Obsidian Vault Path",
+      "help": "Absolute path to your Obsidian vault git repo."
+    },
+    "vaultSubdir": {
+      "label": "Notes Subdirectory",
+      "help": "Subdirectory inside vault for daily notes. Default: 'daily-checkins'."
+    },
+    "gitSync": {
+      "label": "Git Sync",
+      "help": "Auto commit+push after writing notes. Default: true."
+    },
+    "briefingPrompt": {
+      "label": "Custom Briefing Prompt",
+      "help": "Override the default morning briefing system prompt."
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean"
+      },
+      "time": {
+        "type": "string",
+        "pattern": "^[0-2]?\\d:[0-5]\\d$"
+      },
+      "tz": {
+        "type": "string"
+      },
+      "toNumber": {
+        "type": "string",
+        "pattern": "^\\+[1-9]\\d{1,14}$"
+      },
+      "vaultPath": {
+        "type": "string"
+      },
+      "vaultSubdir": {
+        "type": "string"
+      },
+      "gitSync": {
+        "type": "boolean"
+      },
+      "briefingPrompt": {
+        "type": "string"
+      },
+      "maxCallDurationMin": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 60
+      }
+    }
+  }
+}
