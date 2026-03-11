@@ -6,9 +6,13 @@
 
 FROM node:22-bookworm
 
-# -- System deps --
+# -- System deps + sudo + chromium --
 RUN apt-get update && apt-get install -y --no-install-recommends \
       python3 python3-pip python3-venv git curl ca-certificates supervisor \
+      sudo chromium poppler-utils \
+    && echo "node ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/pip3, /usr/bin/pip, /usr/local/bin/npm, /usr/local/bin/npx, /usr/bin/supervisorctl, /usr/bin/chown" \
+       > /etc/sudoers.d/node-limited \
+    && chmod 440 /etc/sudoers.d/node-limited \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # -- Python ML packages (SofaGenius deps) --
@@ -21,7 +25,12 @@ RUN python3 -m pip install --break-system-packages \
       duckdb \
       Pillow \
       supabase python-jose[cryptography] \
-      tweepy numpy
+      tweepy numpy \
+      google-auth
+
+# -- Install ngrok (required for voice-call webhook tunnel) --
+RUN curl -fsSL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz \
+    | tar xz -C /usr/local/bin
 
 # -- Install Bun (required for OpenClaw build) --
 RUN curl -fsSL https://bun.sh/install | bash
@@ -68,17 +77,22 @@ RUN python3 /app/examples/sofagenius-flyio/mount_bridge.py
 
 RUN chown -R node:node /opt/sofagenius
 
-# -- Skills (loaded via openclaw.json skills.load.extraDirs) --
-COPY examples/sofagenius-flyio/skills /opt/sofagenius-skills
-RUN chown -R node:node /opt/sofagenius-skills
+# -- Skills factory defaults (copied to /data/skills on first boot) --
+COPY examples/sofagenius-flyio/skills /opt/sofagenius-skills-default
+RUN chown -R node:node /opt/sofagenius-skills-default
+
+# -- Config factory defaults (used if vault doesn't have config yet) --
+RUN mkdir -p /opt/defaults
+COPY examples/sofagenius-flyio/AGENTS.md /opt/defaults/AGENTS.md
+COPY examples/sofagenius-flyio/HEARTBEAT.md /opt/defaults/HEARTBEAT.md
+
+# -- Vault init templates (used on first boot to seed vault structure) --
+COPY examples/sofagenius-flyio/vault-init /opt/vault-init
 
 # -- Exec approvals (auto-approve python3 skill scripts without manual gates) --
-RUN mkdir -p /home/node/.openclaw
+RUN mkdir -p /home/node/.openclaw /home/node/.openclaw/workspace
 COPY examples/sofagenius-flyio/exec-approvals.json /home/node/.openclaw/exec-approvals.json
 RUN chown -R node:node /home/node/.openclaw
-
-# -- Heartbeat checklist (proactive agent behavior) --
-COPY examples/sofagenius-flyio/HEARTBEAT.md /app/HEARTBEAT.md
 
 # -- OpenClaw config (gateway settings, allowed origins, skills) --
 COPY examples/sofagenius-flyio/openclaw.json /app/openclaw.json
@@ -86,10 +100,13 @@ COPY examples/sofagenius-flyio/openclaw.json /app/openclaw.json
 # -- Supervisor config (runs both services) --
 COPY examples/sofagenius-flyio/supervisord.conf /etc/supervisor/conf.d/openclaw-sofagenius.conf
 
+# -- Entrypoint (vault sync, skills init, package restore, then supervisor) --
+COPY examples/sofagenius-flyio/entrypoint.sh /opt/entrypoint.sh
+RUN chmod +x /opt/entrypoint.sh
+
 ENV NODE_ENV=production
 
 # Expose OpenClaw gateway (3000) and SofaGenius API (8000)
 EXPOSE 3000 8000
 
-# Ensure /data and /tmp are writable by node user at runtime (volume mount resets ownership)
-CMD ["sh", "-c", "chown -R node:node /data && chmod 1777 /tmp && exec supervisord -n -c /etc/supervisor/conf.d/openclaw-sofagenius.conf"]
+ENTRYPOINT ["/opt/entrypoint.sh"]

@@ -3,6 +3,34 @@
 Do NOT message me every time. Only reach out when something is actually worth my attention.
 If nothing interesting, reply HEARTBEAT_OK and move on.
 
+## Evening reflection call (once daily — highest priority)
+
+On the **first heartbeat after 10:45 PM PT**, call me using the `voice_call` tool (`initiate_call` action, conversation mode). This is a wind-down reflection call — help me wrap up the day and get ready for bed.
+
+**Before calling, check `heartbeat-state.json`:**
+
+- Read `lastCallDate`. If it's already today's date (PT), skip — don't call twice.
+- If the key is missing or the date is yesterday/older, proceed with the call.
+
+**What to cover on the call:**
+
+- Natural greeting — acknowledge the time ("hey, winding down?")
+- Quick reflection: what did I work on today? What went well? Reference vault notes or GitHub activity you saw during the day.
+- Gentle nudge to wrap up if I'm still deep in work
+- If there's something I should be aware of for tomorrow (early meetings, deadlines), mention it briefly
+- Keep it under 5 minutes unless I want to chat longer
+
+**After the call:**
+
+- Update `heartbeat-state.json`: set `"lastCallDate"` to today's date (YYYY-MM-DD, PT timezone)
+- Continue with the rest of the heartbeat checklist as normal
+
+**If the call fails** (no answer, voicemail, error):
+
+- Set `"lastCallDate"` to today's date in heartbeat-state.json immediately (so you don't keep retrying).
+- Send me **one** short Discord message logging the failure (e.g. "Tried calling at 10:50 PM — no answer. Let me know if you want to chat."). One message. That's it.
+- **Do NOT retry the call.** Do NOT send follow-up messages about it. Do NOT mention it again on future heartbeats. One attempt, one log, done.
+
 ## Priority: Urgent stuff first
 
 - **Gmail**: Check for unread emails (jackie-gmail: unread). Only tell me about:
@@ -39,6 +67,16 @@ If nothing interesting, reply HEARTBEAT_OK and move on.
 - **SofaGenius training**: If any W&B runs are active, check for anomalies (sofagenius-training: training-check-active). Alert on loss spikes or divergence.
 - **SofaGenius jobs**: Check if any Modal jobs finished (sofagenius-launch: launch-check-completed). Tell me results + suggest next steps.
 
+## Saving notes and memories
+
+When I ask you to "note that down", "remember this", "save that", or anything that should be persisted — **always save to my Obsidian vault** (GitHub repo `lilyzhng/vault`) using the `jackie-github` skill, NOT to local `memory/` files.
+
+- **Daily notes**: Use the consolidated daily note pattern: `jackie/{YYYY-MM-DD}-notes.md` (Pacific timezone for dates)
+- **New note**: Use `commit --append` to add a new section to today's file
+- **Edit/correct**: Use `read_file` to read the current note, then `commit` (without --append) to replace with corrected content
+- **Why**: The vault syncs to my Mac and phone via Obsidian. Local `memory/` files are invisible to me.
+- Internal state tracking (like heartbeat-state.json) can stay in local memory — that's fine. But anything I ask you to save or note should go to the vault.
+
 ## Tone
 
 - Be concise. Lead with what matters: "You got 3 unread emails — one from your advisor about the paper deadline (tomorrow)."
@@ -48,6 +86,5 @@ If nothing interesting, reply HEARTBEAT_OK and move on.
 
 ## Proactive work (do silently, don't message me)
 
-- Organize memory files if they're getting messy
 - Update heartbeat-state.json with what you checked and when
 - If HEARTBEAT.md itself feels stale, update it

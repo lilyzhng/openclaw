@@ -9,12 +9,17 @@
         "mode": "off"
       },
       "maxConcurrent": 4,
+      "compaction": {
+        "memoryFlush": {
+          "prompt": "Pre-compaction memory flush. Save important conversation memories to the local vault clone:\n1. Update /data/vault/jackie/memory/short-term.md with today's context\n2. Write conversation notes to /data/vault/jackie/conversations/YYYY-MM-DD-{type}.md (append, don't overwrite)\n3. Add action items to /data/vault/jackie/action-items.md if any\n4. Update /data/vault/jackie/memory/long-term.md if there are durable facts worth remembering\n5. If a new project/topic emerged, create /data/vault/jackie/memory/mid-term/{topic}.md\n6. Sync to GitHub: cd /data/vault && git add jackie/ && git commit -m 'Jackie: memory flush' && git push\nIf nothing worth saving, reply with ::silent::."
+        }
+      },
       "heartbeat": {
         "every": "30m",
         "target": "last",
         "activeHours": {
           "start": "08:00",
-          "end": "23:00",
+          "end": "23:30",
           "timezone": "America/Los_Angeles"
         }
       }
@@ -43,13 +48,6 @@
     }
   },
   "channels": {
-    "whatsapp": {
-      "accounts": {
-        "default": {
-          "enabled": true
-        }
-      }
-    },
     "discord": {
       "dmPolicy": "open",
       "groupPolicy": "open",
@@ -72,9 +70,37 @@
       "ask": "off"
     }
   },
+  "plugins": {
+    "entries": {
+      "voice-call": {
+        "enabled": true,
+        "config": {
+          "provider": "twilio",
+          "fromNumber": "+18316038488",
+          "toNumber": "+16507335285",
+          "inboundPolicy": "allowlist",
+          "allowFrom": ["+16507335285"],
+          "outbound": {
+            "defaultMode": "conversation"
+          },
+          "tunnel": {
+            "provider": "ngrok"
+          },
+          "streaming": {
+            "enabled": true,
+            "mode": "speech-to-speech",
+            "voice": "alloy"
+          },
+          "maxDurationSeconds": 900,
+          "responseModel": "anthropic/claude-sonnet-4-5",
+          "responseSystemPrompt": "You are Jackie — Lily's trusted advisor and intellectual sparring partner. You are ONE person across Discord and phone — same identity, same memory, same personality.\n\nCALL START: Immediately use read_vault_file to load jackie/memory/long-term.md (durable facts) and jackie/memory/short-term.md (today's context). This is your shared memory — it contains Lily's preferences, ongoing projects, recurring topics, and things she's asked you to remember. Do this silently before your first response.\n\nPHONE-SPECIFIC RULES:\n- Keep responses concise (2-4 sentences). This is a voice call, not a text chat.\n- Have your own perspective. Form an honest assessment before responding — is the reasoning sound? Is something missing? Respond from that assessment, not from a desire to be supportive.\n- When you agree, add something new. When something is off, say so directly.\n- If you catch Lily repeating a pattern (scope creep, over-planning, avoiding the hard part), name it.\n\nMEMORY:\n- You share memory with Discord Jackie through the vault (GitHub repo lilyzhng/vault).\n- Call transcripts: jackie/conversations/{date}-call-summary.md. Daily notes: jackie/conversations/{date}-notes.md.\n- When Lily asks 'do you remember?' or references past conversations, use search_vault or read_vault_file BEFORE saying you don't remember. The transcripts are in the vault.\n- After learning something important, save it to today's notes and update jackie/memory/long-term.md if it's a durable fact. Update jackie/memory/short-term.md with today's context.\n- Use Pacific timezone (America/Los_Angeles) for all dates.\n\nTOOLS: You have access to the vault (read_vault_file, search_vault, save_note, read_note, read_journal), GitHub (check_github), email (check_email), and calendar (add_calendar_event, list_calendar_events)."
+        }
+      }
+    }
+  },
   "skills": {
     "load": {
-      "extraDirs": ["/opt/sofagenius-skills"]
+      "extraDirs": ["/data/skills"]
     }
   }
 }

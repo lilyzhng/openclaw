@@ -3,25 +3,27 @@
 #
 # Setup:
 #   fly apps create my-openclaw-ml
-#   fly volumes create openclaw_data --size 2 --region iad
+#   fly volumes create openclaw_data --size 5 --region iad
 #   fly secrets set ANTHROPIC_API_KEY=sk-ant-...
 #   fly secrets set HF_TOKEN=hf_...
 #   fly secrets set WANDB_API_KEY=...
 #   fly secrets set MODAL_TOKEN_ID=...
 #   fly secrets set MODAL_TOKEN_SECRET=...
 #   fly secrets set OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)
+#   fly secrets set GITHUB_TOKEN=ghp_...   # fine-grained PAT for vault repo
 #   fly deploy -c examples/sofagenius-flyio/fly.toml
 
-app = "my-openclaw-ml"
+app = "openclaw-sofagenius"
 primary_region = "iad"
 
 [build]
-  dockerfile = "examples/sofagenius-flyio/Dockerfile"
+  dockerfile = "Dockerfile"
 
 [env]
   NODE_ENV = "production"
   OPENCLAW_PREFER_PNPM = "1"
   OPENCLAW_STATE_DIR = "/data"
+  OPENCLAW_CONFIG_PATH = "/app/openclaw.json"
   NODE_OPTIONS = "--max-old-space-size=1536"
 
 # Supervisor manages both openclaw-gateway (port 3000) and sofagenius (port 8000).
